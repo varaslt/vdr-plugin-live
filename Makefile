@@ -48,7 +48,6 @@ APIVERSION = $(shell sed -ne '/define APIVERSION/s/^.*"\(.*\)".*$$/\1/p' $(VDRDI
 I18NTARG   = $(shell if [ `echo $(APIVERSION) | tr [.] [0]` -ge "10507" ]; then echo "i18n"; fi)
 TNTVERSION = $(shell tntnet-config --version | sed -e's/\.//g' | sed -e's/pre.*//g' | awk '/^..$$/ { print $$1."000"} /^...$$/ { print $$1."00"} /^....$$/ { print $$1."0" } /^.....$$/ { print $$1 }')
 CXXTOOLVER = $(shell cxxtools-config --version | sed -e's/\.//g' | sed -e's/pre.*//g' | awk '/^..$$/ { print $$1."000"} /^...$$/ { print $$1."00"} /^....$$/ { print $$1."0" } /^.....$$/ { print $$1 }')
-TNTVERS7   = $(shell ver=$(TNTVERSION); if [ $$ver -ge "1606" ]; then echo "yes"; fi)
 
 CXXFLAGS  += $(shell tntnet-config --cxxflags)
 LIBS      += $(shell tntnet-config --libs)
@@ -69,17 +68,10 @@ PACKAGE = vdr-$(ARCHIVE)
 ### Includes and Defines (add further entries here):
 
 INCLUDES += -I$(VDRDIR)/include
-ifneq ($(TNTVERS7),yes)
-	INCLUDES += -Ihttpd
-	LIBS	 += httpd/libhttpd.a
-endif
 
 DEFINES	 += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DTNTVERSION=$(TNTVERSION) -DCXXTOOLVER=$(CXXTOOLVER)
 
 SUBDIRS	  = pages css javascript
-ifneq ($(TNTVERS7),yes)
-	SUBDIRS += httpd
-endif
 
 VERSIONSUFFIX = gen_version_suffix.h
 
@@ -162,29 +154,6 @@ $(VERSIONSUFFIX): FORCE
 libvdr-$(PLUGIN).so: $(VERSIONSUFFIX) $(SUBDIRS) $(PLUGINOBJS)
 	$(CXX) $(LDFLAGS) -shared -o $@	 $(PLUGINOBJS) -Wl,--whole-archive $(WEBLIBS) -Wl,--no-whole-archive $(LIBS)
 	@cp --remove-destination $@ $(LIBDIR)/$@.$(APIVERSION)
-
-ifneq ($(TNTVERS7),yes)
-	@echo ""
-	@echo "LIVE was built successfully and you can try to use it!"
-	@echo ""
-	@echo ""
-	@echo ""
-	@echo ""
-	@echo "IMPORTANT INFORMATION:"
-	@echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	@echo "+ This is one of the *last* CVS versions of LIVE which will   +"
-	@echo "+ work with versions of tntnet *less* than 1.6.0.6!           +"
-	@echo "+                                                             +"
-	@echo "+ This version of LIVE already supports tntnet >= 1.6.0.6.    +"
-	@echo "+                                                             +"
-	@echo "+ Please upgrade tntnet to at least version 1.6.0.6 soon, if  +"
-	@echo "+ you want to keep track of bleeding edge LIVE development.   +"
-	@echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	@echo ""
-	@echo ""
-	@echo ""
-	@echo ""
-endif
 
 dist: clean
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
