@@ -20,13 +20,13 @@ PKGCFG = $(if $(VDRDIR),$(shell pkg-config --variable=$(1) $(VDRDIR)/vdr.pc),$(s
 LIBDIR = $(call PKGCFG,libdir)
 LOCDIR = $(call PKGCFG,locdir)
 PLGCFG = $(call PKGCFG,plgcfg)
+PLGRES = $(call PKGCFG,resdir)/plugins/$(PLUGIN)
 #
 TMPDIR ?= /tmp
 
 ### The compiler options:
 
 ECPPC    ?= ecppc
-export CFLAGS   = $(call PKGCFG,cflags) $(shell tntnet-config --cxxflags)
 export CXXFLAGS = $(call PKGCFG,cxxflags) $(shell tntnet-config --cxxflags)
 export LIBS     = $(shell tntnet-config --libs)
 
@@ -107,10 +107,12 @@ all:$(SOFILE) i18n
 
 MAKEDEP = $(CXX) -MM -MG
 DEPFILE = .dependencies
-$(DEPFILE): Makefile
+$(DEPFILE): Makefile $(OBJS:%.o=%.cpp)
 	@$(MAKEDEP) $(CXXFLAGS) $(DEFINES) $(INCLUDES) $(OBJS:%.o=%.cpp) > $@
 
+ifneq ($(MAKECMDGOALS),clean)
 -include $(DEPFILE)
+endif
 
 ### Internationalization (I18N):
 
@@ -146,6 +148,10 @@ $(SOFILE): $(OBJS)
 install-lib: $(SOFILE)
 	install -D $^ $(DESTDIR)$(LIBDIR)/$^.$(APIVERSION)
 
+install-resources:
+	mkdir -p $(DESTDIR)$(PLGRES)
+	cp -r live/* $(DESTDIR)$(PLGRES)
+
 install: install-lib install-i18n
 
 dist: $(I18Npo) clean
@@ -160,4 +166,3 @@ clean:
 	@-rm -f $(PODIR)/*.mo $(PODIR)/*.pot
 	@-rm -f $(OBJS) $(DEPFILE) *.so *.tgz core* *~
 	@-rm -f css/*.cpp javascript/*.cpp pages/*.cpp
-
