@@ -60,15 +60,9 @@ void PlayRecordingTask::Action()
 
 	const char *current = NowReplaying();
 	if (!current || (0 != strcmp(current, recording->FileName()))) {
-#if VDRVERSNUM >= 10728
 		cReplayControl::SetRecording( 0 );
 		cControl::Shutdown();
 		cReplayControl::SetRecording( recording->FileName() );
-#else
-		cReplayControl::SetRecording( 0, 0 );
-		cControl::Shutdown();
-		cReplayControl::SetRecording( recording->FileName(), recording->Title() );
-#endif
 		cControl::Launch( new cReplayControl );
 		cControl::Attach();
 	}
@@ -128,11 +122,7 @@ void StopRecordingTask::Action()
 		return;
 	}
 
-#if VDRVERSNUM >= 10728
 	cReplayControl::SetRecording( 0 );
-#else
-	cReplayControl::SetRecording( 0, 0 );
-#endif
 	cControl::Shutdown();
 }
 
