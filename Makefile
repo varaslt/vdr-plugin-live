@@ -152,7 +152,7 @@ install-resources:
 	mkdir -p $(DESTDIR)$(PLGRES)
 	cp -r live/* $(DESTDIR)$(PLGRES)
 
-install: install-lib install-i18n
+install: install-lib install-i18n install-resources
 
 dist: $(I18Npo) clean
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
